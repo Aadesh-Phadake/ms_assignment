@@ -1,0 +1,187 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 750" width="1200" height="750" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif">
+  <defs>
+    <style>
+      .bg-canvas { fill: #f8fafc; }
+      .bg-panel { fill: #ffffff; stroke: #e2e8f0; stroke-width: 1.5; }
+      .bg-header { fill: #f1f5f9; stroke: #cbd5e1; stroke-width: 1; }
+      .bg-row-alt { fill: #f8fafc; }
+      .bg-row-sel { fill: #e0f2fe; stroke: #38bdf8; }
+      .border-box { stroke: #94a3b8; stroke-dasharray: 4,4; fill: none; }
+      .text-title { font-size: 16px; font-weight: 700; fill: #0f172a; }
+      .text-sub { font-size: 12px; fill: #64748b; }
+      .text-cell { font-size: 12px; fill: #1e293b; }
+      .text-cell-r { font-size: 12px; fill: #1e293b; text-anchor: end; }
+      .cell-focus { fill: #eff6ff; stroke: #2563eb; stroke-width: 2; }
+      .badge-green { fill: #dcfce7; stroke: #86efac; }
+      .badge-blue { fill: #dbeafe; stroke: #93c5fd; }
+      .chip { fill: #f1f5f9; stroke: #cbd5e1; rx: 4; }
+      .btn-primary { fill: #2563eb; rx: 4; }
+      .btn-sec { fill: #ffffff; stroke: #cbd5e1; rx: 4; }
+    </style>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="750" class="bg-canvas" />
+
+  <!-- Top Navigation Bar -->
+  <rect x="0" y="0" width="1200" height="48" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5" />
+  <circle cx="28" cy="24" r="10" fill="#2563eb" />
+  <text x="46" y="29" class="text-title">Orders Explorer</text>
+  <rect x="175" y="14" width="70" height="20" rx="10" fill="#f1f5f9" />
+  <text x="185" y="28" font-size="11" font-weight="600" fill="#475569">INTERNAL</text>
+  <text x="1040" y="29" class="text-sub" font-weight="600">Ops Team • 13" Optimized</text>
+
+  <!-- Main Container -->
+  <!-- Left Side: Filter Builder Panel (280px wide) -->
+  <rect x="12" y="60" width="280" height="640" rx="6" class="bg-panel" />
+  <text x="26" y="86" class="text-title">Filter Builder</text>
+  <text x="26" y="104" class="text-sub">Narrow orders by criteria</text>
+
+  <!-- Filter Group Box (Dashed Wireframe border) -->
+  <rect x="22" y="118" width="260" height="170" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2" stroke-dasharray="3,3" />
+  <text x="32" y="136" font-size="11" font-weight="700" fill="#3b82f6">GROUP 1 (Conditions OR)</text>
+
+  <!-- Condition 1: status is_one_of shipped, delivered -->
+  <rect x="30" y="146" width="244" height="26" rx="4" fill="#ffffff" stroke="#cbd5e1" />
+  <text x="38" y="163" font-size="11" fill="#0f172a">status | is one of</text>
+  <rect x="30" y="176" width="244" height="24" rx="4" fill="#ffffff" stroke="#cbd5e1" />
+  <text x="38" y="192" font-size="11" fill="#3b82f6">● shipped, delivered</text>
+
+  <!-- Condition 2: amount > 5000 -->
+  <text x="32" y="214" font-size="10" font-weight="700" fill="#64748b">OR</text>
+  <rect x="30" y="222" width="244" height="26" rx="4" fill="#ffffff" stroke="#cbd5e1" />
+  <text x="38" y="239" font-size="11" fill="#0f172a">amount | greater than</text>
+  <rect x="30" y="252" width="244" height="24" rx="4" fill="#ffffff" stroke="#cbd5e1" />
+  <text x="38" y="268" font-size="11" fill="#0f172a">₹5,000</text>
+
+  <!-- Add Condition / Add Group Buttons -->
+  <rect x="22" y="300" width="124" height="26" class="btn-sec" />
+  <text x="42" y="317" font-size="11" font-weight="600" fill="#334155">+ Condition</text>
+  <rect x="156" y="300" width="126" height="26" class="btn-sec" />
+  <text x="182" y="317" font-size="11" font-weight="600" fill="#334155">+ Group</text>
+
+  <!-- Keyboard Shortcuts Helper at bottom of left panel -->
+  <rect x="22" y="530" width="260" height="156" rx="4" fill="#f8fafc" stroke="#e2e8f0" />
+  <text x="32" y="550" font-size="11" font-weight="700" fill="#475569">KEYBOARD SHORTCUTS</text>
+  <text x="32" y="572" font-size="11" fill="#64748b">↑ ↓ ← → : Move cell focus</text>
+  <text x="32" y="594" font-size="11" fill="#64748b">Space : Select/deselect row</text>
+  <text x="32" y="616" font-size="11" fill="#64748b">Shift + Click : Range select</text>
+  <text x="32" y="638" font-size="11" fill="#64748b">Enter : View order details</text>
+  <text x="32" y="660" font-size="11" fill="#64748b">Ctrl+E : Export selected to CSV</text>
+
+  <!-- Right Side: Main Content (Grid + Chips) (304px to 1188px) -->
+  <!-- Top Bar: Filter Chips & Counts -->
+  <rect x="304" y="60" width="884" height="42" rx="6" class="bg-panel" />
+  <text x="318" y="85" font-size="12" font-weight="600" fill="#0f172a">Active Filters:</text>
+  
+  <!-- Chips -->
+  <rect x="400" y="70" width="165" height="22" class="chip" />
+  <text x="408" y="85" font-size="11" fill="#334155">status: shipped, delivered  ✕</text>
+  
+  <rect x="572" y="70" width="135" height="22" class="chip" />
+  <text x="580" y="85" font-size="11" fill="#334155">amount &gt; ₹5,000  ✕</text>
+
+  <text x="718" y="85" font-size="11" font-weight="600" fill="#dc2626" text-decoration="underline">Clear all</text>
+
+  <!-- Result Counter -->
+  <rect x="1010" y="68" width="166" height="26" rx="4" fill="#f1f5f9" />
+  <text x="1022" y="85" font-size="12" font-weight="700" fill="#2563eb">1,284 of 50,000 orders</text>
+
+  <!-- Data Grid Container -->
+  <rect x="304" y="110" width="884" height="545" rx="6" class="bg-panel" />
+
+  <!-- Sticky Header Row (y: 110, height: 36) -->
+  <rect x="304" y="110" width="884" height="36" class="bg-header" rx="6 6 0 0" />
+  <!-- Header Columns -->
+  <!-- Pinned Column: Order ID (Sticky Left with Pin icon) -->
+  <rect x="304" y="110" width="110" height="36" fill="#e2e8f0" stroke="#cbd5e1" />
+  <text x="316" y="133" font-size="11" font-weight="700" fill="#0f172a">Order ID 📌</text>
+  <!-- Other columns -->
+  <text x="424" y="133" font-size="11" font-weight="700" fill="#475569">Customer</text>
+  <text x="560" y="133" font-size="11" font-weight="700" fill="#475569">Status</text>
+  <text x="690" y="133" font-size="11" font-weight="700" fill="#475569" text-anchor="end">Amount ▼</text>
+  <text x="710" y="133" font-size="11" font-weight="700" fill="#475569">Created Date</text>
+  <text x="840" y="133" font-size="11" font-weight="700" fill="#475569">Region</text>
+  <text x="920" y="133" font-size="11" font-weight="700" fill="#475569">Payment</text>
+  <text x="1000" y="133" font-size="11" font-weight="700" fill="#475569">Notes</text>
+
+  <!-- Grid Rows (Dense 32px height) -->
+  <!-- Row 1: Selected Row -->
+  <rect x="304" y="146" width="884" height="32" class="bg-row-sel" />
+  <rect x="304" y="146" width="110" height="32" fill="#bae6fd" stroke="#7dd3fc" />
+  <text x="316" y="167" class="text-cell" font-weight="600">ORD-0000001</text>
+  <text x="424" y="167" class="text-cell">Priya Gupta</text>
+  <rect x="560" y="152" width="64" height="20" rx="3" class="badge-green" />
+  <text x="568" y="166" font-size="11" font-weight="600" fill="#15803d">Delivered</text>
+  <text x="690" y="167" class="text-cell-r">₹309.53</text>
+  <text x="710" y="167" class="text-cell">09 Mar 2026, 00:44</text>
+  <text x="840" y="167" class="text-cell">East</text>
+  <text x="920" y="167" class="text-cell">Net Banking</text>
+  <text x="1000" y="167" class="text-cell" fill="#94a3b8">—</text>
+
+  <!-- Row 2: Focused Cell on Amount -->
+  <rect x="304" y="178" width="884" height="32" fill="#ffffff" stroke="#f1f5f9" />
+  <rect x="304" y="178" width="110" height="32" fill="#f8fafc" stroke="#e2e8f0" />
+  <text x="316" y="199" class="text-cell">ORD-0000003</text>
+  <text x="424" y="199" class="text-cell">Saanvi Gupta</text>
+  <rect x="560" y="184" width="64" height="20" rx="3" class="badge-green" />
+  <text x="568" y="198" font-size="11" font-weight="600" fill="#15803d">Delivered</text>
+  <!-- Focused Cell Outline -->
+  <rect x="620" y="179" width="76" height="30" class="cell-focus" />
+  <text x="690" y="199" class="text-cell-r" font-weight="700" fill="#1d4ed8">₹1,962.40</text>
+  <text x="710" y="199" class="text-cell">29 Aug 2026, 01:58</text>
+  <text x="840" y="199" class="text-cell">Central</text>
+  <text x="920" y="199" class="text-cell">Net Banking</text>
+  <text x="1000" y="199" class="text-cell" fill="#94a3b8">—</text>
+
+  <!-- Row 3: Normal Row -->
+  <rect x="304" y="210" width="884" height="32" class="bg-row-alt" stroke="#f1f5f9" />
+  <rect x="304" y="210" width="110" height="32" fill="#f1f5f9" stroke="#e2e8f0" />
+  <text x="316" y="231" class="text-cell">ORD-0000004</text>
+  <text x="424" y="231" class="text-cell">Rohan Shah</text>
+  <rect x="560" y="216" width="64" height="20" rx="3" class="badge-green" />
+  <text x="568" y="230" font-size="11" font-weight="600" fill="#15803d">Delivered</text>
+  <text x="690" y="231" class="text-cell-r">₹1,434.90</text>
+  <text x="710" y="231" class="text-cell">21 May 2026, 10:05</text>
+  <text x="840" y="231" class="text-cell">East</text>
+  <text x="920" y="231" class="text-cell">Net Banking</text>
+  <text x="1000" y="231" class="text-cell" fill="#94a3b8">—</text>
+
+  <!-- Row 4: Selected Row -->
+  <rect x="304" y="242" width="884" height="32" class="bg-row-sel" />
+  <rect x="304" y="242" width="110" height="32" fill="#bae6fd" stroke="#7dd3fc" />
+  <text x="316" y="263" class="text-cell" font-weight="600">ORD-0000007</text>
+  <text x="424" y="263" class="text-cell">Arjun Patel</text>
+  <rect x="560" y="248" width="60" height="20" rx="3" class="badge-blue" />
+  <text x="568" y="262" font-size="11" font-weight="600" fill="#1d4ed8">Shipped</text>
+  <text x="690" y="263" class="text-cell-r">₹9,431.10</text>
+  <text x="710" y="263" class="text-cell">11 Nov 2025, 14:12</text>
+  <text x="840" y="263" class="text-cell">North</text>
+  <text x="920" y="263" class="text-cell">UPI</text>
+  <text x="1000" y="263" class="text-cell">Urgent dispatch...</text>
+
+  <!-- Row 5: Normal Row with long truncated note -->
+  <rect x="304" y="274" width="884" height="32" fill="#ffffff" stroke="#f1f5f9" />
+  <rect x="304" y="274" width="110" height="32" fill="#f8fafc" stroke="#e2e8f0" />
+  <text x="316" y="295" class="text-cell">ORD-0000012</text>
+  <text x="424" y="295" class="text-cell">Kavita Verma</text>
+  <rect x="560" y="280" width="60" height="20" rx="3" class="badge-blue" />
+  <text x="568" y="294" font-size="11" font-weight="600" fill="#1d4ed8">Shipped</text>
+  <text x="690" y="295" class="text-cell-r">₹6,280.00</text>
+  <text x="710" y="295" class="text-cell">03 Jan 2026, 17:30</text>
+  <text x="840" y="295" class="text-cell">South</text>
+  <text x="920" y="295" class="text-cell">Card</text>
+  <text x="1000" y="295" class="text-cell">Customer called to verify...</text>
+
+  <!-- Vertical Scrollbar representation -->
+  <rect x="1178" y="146" width="6" height="505" fill="#f1f5f9" />
+  <rect x="1178" y="152" width="6" height="80" rx="3" fill="#94a3b8" />
+
+  <!-- Bottom Status Bar -->
+  <rect x="304" y="662" width="884" height="38" rx="6" class="bg-panel" />
+  <text x="318" y="686" font-size="12" font-weight="600" fill="#0f172a">2 rows selected</text>
+  <text x="430" y="686" font-size="11" fill="#64748b">(Shift+click to range select • Space to toggle)</text>
+  
+  <rect x="1040" y="668" width="136" height="26" class="btn-primary" />
+  <text x="1058" y="685" font-size="11" font-weight="600" fill="#ffffff">📥 Export CSV (2)</text>
+</svg>
