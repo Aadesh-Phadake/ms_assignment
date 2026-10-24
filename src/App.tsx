@@ -5,8 +5,11 @@ import { useFilteredOrders } from './hooks/useFilteredOrders';
 import { useSelection } from './hooks/useSelection';
 import { COLUMNS, exportToCSV } from './utils';
 import { DataGrid } from './components/Grid';
+import { FilterBuilder } from './components/Filter/FilterBuilder';
+import { FilterChips } from './components/Filter/FilterChips';
 import { EmptyState } from './components/common/EmptyState';
 import { StatusBar } from './components/common/StatusBar';
+import { OrderDetail } from './components/Detail/OrderDetail';
 import { Loader2 } from 'lucide-react';
 
 function App() {
@@ -15,7 +18,7 @@ function App() {
   // Sort state
   const [sort, setSort] = useState<SortState | null>(null);
 
-  // Filter state (to be built in Day 2)
+  // Filter state
   const [filters, setFilters] = useState<FilterState>([]);
 
   // Pinned column
@@ -87,6 +90,21 @@ function App() {
     setFilters([]);
   }, []);
 
+  // Remove a single condition from filters
+  const handleRemoveCondition = useCallback(
+    (groupIndex: number, conditionIndex: number) => {
+      const next = filters.map((group, gi) => {
+        if (gi !== groupIndex) return group;
+        return {
+          ...group,
+          conditions: group.conditions.filter((_, ci) => ci !== conditionIndex),
+        };
+      }).filter((group) => group.conditions.length > 0);
+      setFilters(next);
+    },
+    [filters]
+  );
+
   // Open detail panel
   const handleOpenDetail = useCallback((order: Order) => {
     setDetailOrder(order);
@@ -136,18 +154,17 @@ function App() {
 
       {/* Main content */}
       <div className="flex flex-1 overflow-hidden">
-        {/* Left panel placeholder for filter builder (Day 2) */}
-        <aside className="w-72 border-r border-slate-200 bg-white p-3 shrink-0 overflow-y-auto">
-          <h2 className="text-sm font-bold text-slate-800 mb-1">Filter Builder</h2>
-          <p className="text-xs text-slate-500 mb-4">Narrow orders by criteria</p>
-          <div className="border-2 border-dashed border-slate-200 rounded-lg p-6 text-center">
-            <p className="text-xs text-slate-400">Filter builder coming soon</p>
-          </div>
-        </aside>
+        {/* Filter Builder panel */}
+        <FilterBuilder filters={filters} onChange={setFilters} />
 
         {/* Grid area */}
         <main className="flex-1 flex flex-col gap-1.5 p-2 overflow-hidden">
-          {/* Filter chips placeholder (Day 2) */}
+          {/* Filter chips */}
+          <FilterChips
+            filters={filters}
+            onRemoveCondition={handleRemoveCondition}
+            onClearAll={handleClearFilters}
+          />
 
           {/* Grid or Empty State */}
           {filteredOrders.length === 0 ? (
@@ -181,33 +198,7 @@ function App() {
 
         {/* Detail panel */}
         {detailOrder && (
-          <aside className="w-80 border-l border-slate-200 bg-white p-4 shrink-0 overflow-y-auto">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm font-bold text-slate-800">Order Details</h2>
-              <button
-                onClick={() => setDetailOrder(null)}
-                className="text-slate-400 hover:text-slate-600 text-lg leading-none"
-              >
-                ✕
-              </button>
-            </div>
-            <div className="space-y-3 text-xs">
-              {Object.entries(detailOrder).map(([key, value]) => (
-                <div key={key} className="border-b border-slate-100 pb-2">
-                  <dt className="font-semibold text-slate-500 uppercase tracking-wider text-[10px] mb-0.5">
-                    {key}
-                  </dt>
-                  <dd className="text-slate-800 break-words">
-                    {value instanceof Date
-                      ? value.toISOString()
-                      : value === null
-                        ? '—'
-                        : String(value)}
-                  </dd>
-                </div>
-              ))}
-            </div>
-          </aside>
+          <OrderDetail order={detailOrder} onClose={() => setDetailOrder(null)} />
         )}
       </div>
     </div>

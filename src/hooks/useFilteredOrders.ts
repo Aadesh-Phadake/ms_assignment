@@ -19,6 +19,8 @@ function getFieldValue(order: Order, field: ColumnKey): string | number | Date |
 }
 
 function matchesCondition(order: Order, condition: FilterCondition): boolean {
+  if (!condition.value || condition.value.trim() === '') return true;
+
   const colDef = COLUMNS.find((c) => c.key === condition.field);
   if (!colDef) return true;
 
@@ -43,15 +45,25 @@ function matchesCondition(order: Order, condition: FilterCondition): boolean {
   if (colDef.type === 'number') {
     const num = typeof raw === 'number' ? raw : parseFloat(String(raw ?? '0'));
     switch (condition.operator) {
-      case 'eq':
-        return num === parseFloat(value);
-      case 'gt':
-        return num > parseFloat(value);
-      case 'lt':
-        return num < parseFloat(value);
+      case 'eq': {
+        const target = parseFloat(value);
+        return isNaN(target) ? true : num === target;
+      }
+      case 'gt': {
+        const target = parseFloat(value);
+        return isNaN(target) ? true : num > target;
+      }
+      case 'lt': {
+        const target = parseFloat(value);
+        return isNaN(target) ? true : num < target;
+      }
       case 'between': {
-        const [min, max] = value.split(',').map(Number);
-        return num >= min && num <= max;
+        const parts = value.split(',');
+        const min = parts[0] ? parseFloat(parts[0]) : null;
+        const max = parts[1] ? parseFloat(parts[1]) : null;
+        if (min !== null && !isNaN(min) && num < min) return false;
+        if (max !== null && !isNaN(max) && num > max) return false;
+        return true;
       }
       default:
         return true;
@@ -63,13 +75,21 @@ function matchesCondition(order: Order, condition: FilterCondition): boolean {
     if (!date) return false;
     const ts = date.getTime();
     switch (condition.operator) {
-      case 'before':
-        return ts < new Date(value).getTime();
-      case 'after':
-        return ts > new Date(value).getTime();
+      case 'before': {
+        const target = new Date(value).getTime();
+        return isNaN(target) ? true : ts < target;
+      }
+      case 'after': {
+        const target = new Date(value).getTime();
+        return isNaN(target) ? true : ts > target;
+      }
       case 'between': {
-        const [start, end] = value.split(',');
-        return ts >= new Date(start).getTime() && ts <= new Date(end).getTime();
+        const parts = value.split(',');
+        const start = parts[0] ? new Date(parts[0]).getTime() : null;
+        const end = parts[1] ? new Date(parts[1]).getTime() : null;
+        if (start !== null && !isNaN(start) && ts < start) return false;
+        if (end !== null && !isNaN(end) && ts > end) return false;
+        return true;
       }
       default:
         return true;
@@ -80,7 +100,11 @@ function matchesCondition(order: Order, condition: FilterCondition): boolean {
     const fieldVal = condition.field === 'priority'
       ? (raw === null ? 'null' : String(raw))
       : String(raw ?? '').toLowerCase();
-    const selected = value.split(',').map((v) => v.trim().toLowerCase());
+    const selected = value
+      .split(',')
+      .map((v) => v.trim().toLowerCase())
+      .filter(Boolean);
+    if (selected.length === 0) return true;
     switch (condition.operator) {
       case 'is_one_of':
         return selected.includes(fieldVal);
