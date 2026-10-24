@@ -88,6 +88,7 @@ export const DataGrid: React.FC<DataGridProps> = ({
   const handleCellClick = useCallback(
     (rowIndex: number, colIndex: number) => {
       onFocusedCellChange({ row: rowIndex, col: colIndex });
+      scrollContainerRef.current?.focus();
     },
     [onFocusedCellChange]
   );
@@ -140,14 +141,33 @@ export const DataGrid: React.FC<DataGridProps> = ({
         case 'ArrowRight':
           e.preventDefault();
           if (col < columns.length - 1) {
-            onFocusedCellChange({ row, col: col + 1 });
+            const nextCol = col + 1;
+            onFocusedCellChange({ row, col: nextCol });
+            let leftOffset = 0;
+            for (let i = 0; i < nextCol; i++) {
+              leftOffset += columnWidths[columns[i].key] ?? columns[i].width;
+            }
+            const colWidth = columnWidths[columns[nextCol].key] ?? columns[nextCol].width;
+            const container = scrollContainerRef.current;
+            if (container && leftOffset + colWidth > container.scrollLeft + container.clientWidth) {
+              container.scrollLeft = leftOffset + colWidth - container.clientWidth;
+            }
           }
           break;
 
         case 'ArrowLeft':
           e.preventDefault();
           if (col > 0) {
-            onFocusedCellChange({ row, col: col - 1 });
+            const nextCol = col - 1;
+            onFocusedCellChange({ row, col: nextCol });
+            let leftOffset = 0;
+            for (let i = 0; i < nextCol; i++) {
+              leftOffset += columnWidths[columns[i].key] ?? columns[i].width;
+            }
+            const container = scrollContainerRef.current;
+            if (container && leftOffset < container.scrollLeft) {
+              container.scrollLeft = leftOffset;
+            }
           }
           break;
 
@@ -211,6 +231,7 @@ export const DataGrid: React.FC<DataGridProps> = ({
                   rowIndex={actualIndex}
                   pinnedColumn={pinnedColumn}
                   onRowClick={onRowSelect}
+                  onRowDoubleClick={onOpenDetail}
                   onCellClick={handleCellClick}
                   style={{
                     position: 'absolute',

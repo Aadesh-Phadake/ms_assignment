@@ -11,6 +11,7 @@ interface GridRowProps {
   rowIndex: number;
   pinnedColumn: ColumnKey | null;
   onRowClick: (orderId: string, shiftKey: boolean) => void;
+  onRowDoubleClick?: (order: Order) => void;
   onCellClick: (rowIndex: number, colIndex: number) => void;
   style: React.CSSProperties;
 }
@@ -24,6 +25,7 @@ export const GridRow: React.FC<GridRowProps> = React.memo(({
   rowIndex,
   pinnedColumn,
   onRowClick,
+  onRowDoubleClick,
   onCellClick,
   style,
 }) => {
@@ -39,6 +41,7 @@ export const GridRow: React.FC<GridRowProps> = React.memo(({
       aria-rowindex={rowIndex + 2}
       aria-selected={isSelected}
       onClick={(e) => onRowClick(order.id, e.shiftKey)}
+      onDoubleClick={() => onRowDoubleClick?.(order)}
       style={style}
       className={`flex h-8 border-b border-slate-100 cursor-pointer transition-colors duration-75 ${bgClass} ${
         isSelected ? 'border-l-2 border-l-blue-500' : ''
