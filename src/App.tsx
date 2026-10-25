@@ -12,7 +12,7 @@ import { FilterChips } from './components/Filter/FilterChips';
 import { EmptyState } from './components/common/EmptyState';
 import { StatusBar } from './components/common/StatusBar';
 import { OrderDetail } from './components/Detail/OrderDetail';
-import { Loader2, AlertTriangle, X, PanelLeft, Download, Share2, Check } from 'lucide-react';
+import { Loader2, AlertTriangle, X, PanelLeft, Share2, Check } from 'lucide-react';
 
 function App() {
   const { orders, loading, error, totalCount } = useOrders();
@@ -256,17 +256,8 @@ function App() {
         {/* Right Actions */}
         <div className="flex items-center gap-2">
           <button
-            onClick={handleExport}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-md hover:bg-slate-50 transition-colors shadow-2xs"
-            title="Export to CSV"
-          >
-            <Download className="w-3.5 h-3.5 text-slate-500" />
-            CSV {selection.count > 0 ? `(${selection.count})` : ''}
-          </button>
-
-          <button
             onClick={handleShare}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-md hover:bg-slate-50 transition-colors shadow-2xs"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-md hover:bg-slate-50 transition-colors shadow-2xs cursor-pointer"
             title="Copy URL with current filters and state"
           >
             {copied ? (
