@@ -38,12 +38,16 @@ export function encodeUrlState(state: AppUrlState): string {
   }
 
   if (state.selectedIds.size > 0) {
-    params.set('selected', Array.from(state.selectedIds).join(','));
+    // Cap at 200 IDs in URL to avoid excessively long URLs
+    const ids = Array.from(state.selectedIds).slice(0, 200);
+    params.set('selected', ids.join(','));
   }
 
   if (state.filters.length > 0) {
     try {
-      const encoded = btoa(JSON.stringify(state.filters));
+      // Use encodeURIComponent to handle Unicode in filter values
+      const json = JSON.stringify(state.filters);
+      const encoded = btoa(unescape(encodeURIComponent(json)));
       params.set('filters', encoded);
     } catch {
       // Silently skip if encoding fails
@@ -89,7 +93,9 @@ export function decodeUrlState(search: string): AppUrlState {
   const filtersStr = params.get('filters');
   if (filtersStr) {
     try {
-      const decoded = JSON.parse(atob(filtersStr));
+      // Decode Unicode-safe base64
+      const json = decodeURIComponent(escape(atob(filtersStr)));
+      const decoded = JSON.parse(json);
       if (Array.isArray(decoded)) {
         result.filters = decoded;
       }
