@@ -12,10 +12,16 @@ import { FilterChips } from './components/Filter/FilterChips';
 import { EmptyState } from './components/common/EmptyState';
 import { StatusBar } from './components/common/StatusBar';
 import { OrderDetail } from './components/Detail/OrderDetail';
-import { Loader2, AlertTriangle, X } from 'lucide-react';
+import { Loader2, AlertTriangle, X, PanelLeft, Download, Share2, Check } from 'lucide-react';
 
 function App() {
   const { orders, loading, error, totalCount } = useOrders();
+
+  // Sidebar toggle state
+  const [isFilterOpen, setIsFilterOpen] = useState(true);
+
+  // Share link copied toast state
+  const [copied, setCopied] = useState(false);
 
   // Sort state
   const [sort, setSort] = useState<SortState | null>(null);
@@ -87,6 +93,19 @@ function App() {
   // Selection hook
   const selection = useSelection(filteredOrders, selectedIds, setSelectedIds, lastSelectedIndex);
 
+  // Toggle select all visible orders
+  const handleToggleSelectAll = useCallback(() => {
+    const allFilteredSelected =
+      filteredOrders.length > 0 && filteredOrders.every((o) => selectedIds.has(o.id));
+    if (allFilteredSelected) {
+      setSelectedIds(new Set());
+    } else {
+      const next = new Set(selectedIds);
+      filteredOrders.forEach((o) => next.add(o.id));
+      setSelectedIds(next);
+    }
+  }, [filteredOrders, selectedIds]);
+
   // Reorder columns to put pinned column first
   const displayColumns = useMemo(() => {
     if (!pinnedColumn) return COLUMNS;
@@ -120,8 +139,18 @@ function App() {
   const handleExport = useCallback(() => {
     if (selection.selectedOrders.length > 0) {
       exportToCSV(selection.selectedOrders);
+    } else if (filteredOrders.length > 0) {
+      // If none explicitly selected, export current filtered results
+      exportToCSV(filteredOrders);
     }
-  }, [selection.selectedOrders]);
+  }, [selection.selectedOrders, filteredOrders]);
+
+  // Share current URL
+  const handleShare = useCallback(() => {
+    navigator.clipboard.writeText(window.location.href);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }, []);
 
   // Clear filters handler
   const handleClearFilters = useCallback(() => {
@@ -169,7 +198,7 @@ function App() {
       <div className="h-screen flex items-center justify-center bg-slate-50">
         <div className="flex flex-col items-center gap-3 text-center px-6">
           <div className="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center">
-            <span className="text-red-500 text-xl">!</span>
+            <span className="text-red-500 text-xl font-bold">!</span>
           </div>
           <h3 className="text-lg font-semibold text-slate-800">Failed to load orders</h3>
           <p className="text-sm text-slate-500">{error}</p>
@@ -179,7 +208,7 @@ function App() {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-slate-50">
+    <div className="h-screen flex flex-col bg-slate-50 font-sans text-slate-900">
       {/* URL error banner */}
       {urlErrorMsg && (
         <div className="flex items-center gap-2 px-4 py-2 bg-amber-50 border-b border-amber-200 text-xs text-amber-800 shrink-0">
@@ -194,23 +223,73 @@ function App() {
         </div>
       )}
 
-      {/* Header */}
-      <header className="flex items-center justify-between h-12 px-4 bg-white border-b border-slate-200 shrink-0">
+      {/* Top Navigation Bar */}
+      <header className="flex items-center justify-between h-14 px-4 bg-white border-b border-slate-200 shrink-0">
         <div className="flex items-center gap-3">
-          <div className="w-7 h-7 bg-blue-600 rounded-md flex items-center justify-center">
-            <span className="text-white font-bold text-xs">OE</span>
+          {/* Toggle Filter Panel Button */}
+          <button
+            onClick={() => setIsFilterOpen(!isFilterOpen)}
+            className={`p-2 rounded-lg border transition-colors cursor-pointer ${
+              isFilterOpen
+                ? 'bg-blue-50 border-blue-200 text-blue-600'
+                : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+            }`}
+            title={isFilterOpen ? 'Hide Filters' : 'Show Filters'}
+          >
+            <PanelLeft className="w-4 h-4" />
+          </button>
+
+          {/* App Logo */}
+          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center shadow-xs">
+            <span className="text-white font-bold text-xs tracking-wider">OE</span>
           </div>
-          <h1 className="text-sm font-bold text-slate-900">Orders Explorer</h1>
-          <span className="text-[10px] font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full uppercase tracking-wider">
-            Internal
-          </span>
+
+          {/* Title & Subtitle */}
+          <div>
+            <h1 className="text-sm font-bold text-slate-900 leading-tight">Orders Explorer</h1>
+            <p className="text-[11px] text-slate-500 font-medium">
+              Showing <span className="font-semibold text-slate-700">{filteredOrders.length.toLocaleString('en-IN')}</span> of {totalCount.toLocaleString('en-IN')} orders
+            </p>
+          </div>
+        </div>
+
+        {/* Right Actions */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleExport}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-md hover:bg-slate-50 transition-colors shadow-2xs"
+            title="Export to CSV"
+          >
+            <Download className="w-3.5 h-3.5 text-slate-500" />
+            CSV {selection.count > 0 ? `(${selection.count})` : ''}
+          </button>
+
+          <button
+            onClick={handleShare}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-md hover:bg-slate-50 transition-colors shadow-2xs"
+            title="Copy URL with current filters and state"
+          >
+            {copied ? (
+              <>
+                <Check className="w-3.5 h-3.5 text-emerald-600" />
+                <span className="text-emerald-600">Copied!</span>
+              </>
+            ) : (
+              <>
+                <Share2 className="w-3.5 h-3.5 text-slate-500" />
+                <span>Share</span>
+              </>
+            )}
+          </button>
         </div>
       </header>
 
       {/* Main content */}
       <div className="flex flex-1 overflow-hidden">
-        {/* Filter Builder panel */}
-        <FilterBuilder filters={filters} onChange={setFilters} />
+        {/* Filter Builder panel (toggleable) */}
+        {isFilterOpen && (
+          <FilterBuilder filters={filters} onChange={setFilters} />
+        )}
 
         {/* Grid area */}
         <main className="flex-1 flex flex-col gap-1.5 p-2 overflow-hidden">
@@ -234,6 +313,7 @@ function App() {
               onSort={handleSort}
               onPin={handlePin}
               onRowSelect={selection.toggle}
+              onToggleSelectAll={handleToggleSelectAll}
               onOpenDetail={handleOpenDetail}
               focusedCell={focusedCell}
               onFocusedCellChange={setFocusedCell}

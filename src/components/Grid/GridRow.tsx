@@ -30,10 +30,10 @@ export const GridRow: React.FC<GridRowProps> = React.memo(({
   style,
 }) => {
   const bgClass = isSelected
-    ? 'bg-blue-50 hover:bg-blue-100'
+    ? 'bg-blue-50/80 hover:bg-blue-100/80'
     : rowIndex % 2 === 0
-      ? 'bg-white hover:bg-slate-50'
-      : 'bg-slate-50/50 hover:bg-slate-100/50';
+      ? 'bg-white hover:bg-slate-50/80'
+      : 'bg-slate-50/40 hover:bg-slate-100/60';
 
   return (
     <div
@@ -43,10 +43,28 @@ export const GridRow: React.FC<GridRowProps> = React.memo(({
       onClick={(e) => onRowClick(order.id, e.shiftKey)}
       onDoubleClick={() => onRowDoubleClick?.(order)}
       style={style}
-      className={`flex h-8 border-b border-slate-100 cursor-pointer transition-colors duration-75 ${bgClass} ${
-        isSelected ? 'border-l-2 border-l-blue-500' : ''
+      className={`flex h-[38px] border-b border-slate-100 cursor-pointer transition-colors duration-75 ${bgClass} ${
+        isSelected ? 'border-l-2 border-l-blue-600' : ''
       }`}
     >
+      {/* Checkbox Column */}
+      <div
+        onClick={(e) => {
+          e.stopPropagation();
+          onRowClick(order.id, e.shiftKey);
+        }}
+        className={`w-11 min-w-[44px] max-w-[44px] h-[38px] flex items-center justify-center border-r border-slate-200 shrink-0 sticky left-0 z-20 ${
+          isSelected ? 'bg-blue-50/90' : 'bg-inherit'
+        }`}
+      >
+        <input
+          type="checkbox"
+          checked={isSelected}
+          onChange={() => {}} // handled by onClick on the wrapper
+          className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+        />
+      </div>
+
       {columns.map((col, colIndex) => {
         const width = columnWidths[col.key] ?? col.width;
         const isPinned = col.key === pinnedColumn;

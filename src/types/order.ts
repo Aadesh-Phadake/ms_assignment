@@ -72,7 +72,7 @@ export interface ColumnDef {
   width: number;
   minWidth: number;
   type: 'text' | 'number' | 'date' | 'enum';
-  align: 'left' | 'right';
+  align: 'left' | 'center' | 'right';
   enumValues?: string[];
 }
 

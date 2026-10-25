@@ -3,7 +3,7 @@ import type { Order, ColumnDef, ColumnKey, SortState } from '../../types';
 import { GridHeader } from './GridHeader';
 import { GridRow } from './GridRow';
 
-const ROW_HEIGHT = 32;
+const ROW_HEIGHT = 38;
 const OVERSCAN = 10;
 
 interface DataGridProps {
@@ -15,6 +15,7 @@ interface DataGridProps {
   onSort: (column: ColumnKey) => void;
   onPin: (column: ColumnKey) => void;
   onRowSelect: (orderId: string, shiftKey: boolean) => void;
+  onToggleSelectAll: () => void;
   onOpenDetail: (order: Order) => void;
   focusedCell: { row: number; col: number } | null;
   onFocusedCellChange: (cell: { row: number; col: number } | null) => void;
@@ -31,6 +32,7 @@ export const DataGrid: React.FC<DataGridProps> = ({
   onSort,
   onPin,
   onRowSelect,
+  onToggleSelectAll,
   onOpenDetail,
   focusedCell,
   onFocusedCellChange,
@@ -66,6 +68,12 @@ export const DataGrid: React.FC<DataGridProps> = ({
     }
   }, []);
 
+  // Check if all visible are selected
+  const isAllSelected = useMemo(
+    () => orders.length > 0 && orders.every((o) => selectedIds.has(o.id)),
+    [orders, selectedIds]
+  );
+
   // Virtualization calculations
   const totalHeight = orders.length * ROW_HEIGHT;
   const startIndex = Math.max(0, Math.floor(scrollTop / ROW_HEIGHT) - OVERSCAN);
@@ -78,9 +86,9 @@ export const DataGrid: React.FC<DataGridProps> = ({
     [orders, startIndex, endIndex]
   );
 
-  // Total width for horizontal scroll
+  // Total width for horizontal scroll (including 44px checkbox column)
   const totalWidth = useMemo(
-    () => columns.reduce((sum, col) => sum + (columnWidths[col.key] ?? col.width), 0),
+    () => 44 + columns.reduce((sum, col) => sum + (columnWidths[col.key] ?? col.width), 0),
     [columns, columnWidths]
   );
 
@@ -97,8 +105,10 @@ export const DataGrid: React.FC<DataGridProps> = ({
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Only handle when grid has focus
-      if (!scrollContainerRef.current?.contains(document.activeElement) &&
-          document.activeElement !== scrollContainerRef.current) {
+      if (
+        !scrollContainerRef.current?.contains(document.activeElement) &&
+        document.activeElement !== scrollContainerRef.current
+      ) {
         return;
       }
 
@@ -117,11 +127,10 @@ export const DataGrid: React.FC<DataGridProps> = ({
           e.preventDefault();
           if (row < orders.length - 1) {
             onFocusedCellChange({ row: row + 1, col });
-            // Scroll into view
             const newTop = (row + 1) * ROW_HEIGHT;
             if (newTop + ROW_HEIGHT > scrollTop + viewportHeight) {
               scrollContainerRef.current?.scrollTo({
-                top: newTop + ROW_HEIGHT - viewportHeight + 36,
+                top: newTop + ROW_HEIGHT - viewportHeight + 40,
               });
             }
           }
@@ -143,7 +152,7 @@ export const DataGrid: React.FC<DataGridProps> = ({
           if (col < columns.length - 1) {
             const nextCol = col + 1;
             onFocusedCellChange({ row, col: nextCol });
-            let leftOffset = 0;
+            let leftOffset = 44;
             for (let i = 0; i < nextCol; i++) {
               leftOffset += columnWidths[columns[i].key] ?? columns[i].width;
             }
@@ -160,7 +169,7 @@ export const DataGrid: React.FC<DataGridProps> = ({
           if (col > 0) {
             const nextCol = col - 1;
             onFocusedCellChange({ row, col: nextCol });
-            let leftOffset = 0;
+            let leftOffset = 44;
             for (let i = 0; i < nextCol; i++) {
               leftOffset += columnWidths[columns[i].key] ?? columns[i].width;
             }
@@ -189,18 +198,28 @@ export const DataGrid: React.FC<DataGridProps> = ({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [focusedCell, orders, columns.length, scrollTop, viewportHeight, onFocusedCellChange, onRowSelect, onOpenDetail]);
+  }, [
+    focusedCell,
+    orders,
+    columns,
+    columnWidths,
+    scrollTop,
+    viewportHeight,
+    onFocusedCellChange,
+    onRowSelect,
+    onOpenDetail,
+  ]);
 
   return (
-    <div className="flex flex-col h-full border border-slate-200 rounded-md bg-white overflow-hidden">
+    <div className="flex flex-col h-full border border-slate-200 rounded-md bg-white overflow-hidden shadow-xs">
       <div
         ref={scrollContainerRef}
         onScroll={handleScroll}
         tabIndex={0}
         role="grid"
         aria-rowcount={orders.length + 1}
-        aria-colcount={columns.length}
-        className="flex-1 overflow-auto outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset"
+        aria-colcount={columns.length + 1}
+        className="flex-1 overflow-auto outline-none focus:ring-1 focus:ring-blue-500/50"
       >
         <div style={{ minWidth: `${totalWidth}px` }}>
           {/* Sticky Header */}
@@ -212,6 +231,8 @@ export const DataGrid: React.FC<DataGridProps> = ({
             onSort={onSort}
             onResize={onColumnResize}
             onPin={onPin}
+            isAllSelected={isAllSelected}
+            onToggleSelectAll={onToggleSelectAll}
           />
 
           {/* Virtual Scrolling Body */}
