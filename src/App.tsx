@@ -1,8 +1,10 @@
-import { useState, useCallback, useRef, useMemo } from 'react';
+import { useState, useCallback, useRef, useMemo, useEffect } from 'react';
 import type { Order, ColumnKey, SortState, SortDirection, FilterState } from './types';
 import { useOrders } from './hooks/useOrders';
 import { useFilteredOrders } from './hooks/useFilteredOrders';
 import { useSelection } from './hooks/useSelection';
+import { useUrlState } from './hooks/useUrlState';
+import type { UrlSyncState } from './hooks/useUrlState';
 import { COLUMNS, exportToCSV } from './utils';
 import { DataGrid } from './components/Grid';
 import { FilterBuilder } from './components/Filter/FilterBuilder';
@@ -10,7 +12,7 @@ import { FilterChips } from './components/Filter/FilterChips';
 import { EmptyState } from './components/common/EmptyState';
 import { StatusBar } from './components/common/StatusBar';
 import { OrderDetail } from './components/Detail/OrderDetail';
-import { Loader2 } from 'lucide-react';
+import { Loader2, AlertTriangle, X } from 'lucide-react';
 
 function App() {
   const { orders, loading, error, totalCount } = useOrders();
@@ -18,8 +20,18 @@ function App() {
   // Sort state
   const [sort, setSort] = useState<SortState | null>(null);
 
-  // Filter state
+  // Filter state — immediate state for the builder UI
   const [filters, setFilters] = useState<FilterState>([]);
+
+  // Debounced filters — applied to the grid after a short delay
+  const [debouncedFilters, setDebouncedFilters] = useState<FilterState>([]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedFilters(filters);
+    }, 150);
+    return () => clearTimeout(timer);
+  }, [filters]);
 
   // Pinned column
   const [pinnedColumn, setPinnedColumn] = useState<ColumnKey | null>(null);
@@ -43,8 +55,34 @@ function App() {
   // Detail panel
   const [detailOrder, setDetailOrder] = useState<Order | null>(null);
 
-  // Filtered and sorted orders
-  const filteredOrders = useFilteredOrders(orders, filters, sort);
+  // URL error banner
+  const [urlErrorMsg, setUrlErrorMsg] = useState<string | null>(null);
+
+  // ── URL State Sync ─────────────────────────────────────────────
+  const urlSyncState = useMemo<UrlSyncState>(
+    () => ({ sort, pinnedColumn, selectedIds, filters: debouncedFilters }),
+    [sort, pinnedColumn, selectedIds, debouncedFilters]
+  );
+
+  const handleUrlRestore = useCallback((restored: UrlSyncState) => {
+    if (restored.sort) setSort(restored.sort);
+    if (restored.pinnedColumn) setPinnedColumn(restored.pinnedColumn);
+    if (restored.selectedIds.size > 0) setSelectedIds(restored.selectedIds);
+    if (restored.filters.length > 0) {
+      setFilters(restored.filters);
+      setDebouncedFilters(restored.filters);
+    }
+  }, []);
+
+  const { urlError } = useUrlState(urlSyncState, handleUrlRestore);
+
+  // Show URL error once
+  useEffect(() => {
+    if (urlError) setUrlErrorMsg(urlError);
+  }, [urlError]);
+
+  // ── Filtered and sorted orders (uses debounced filters) ────────
+  const filteredOrders = useFilteredOrders(orders, debouncedFilters, sort);
 
   // Selection hook
   const selection = useSelection(filteredOrders, selectedIds, setSelectedIds, lastSelectedIndex);
@@ -88,18 +126,21 @@ function App() {
   // Clear filters handler
   const handleClearFilters = useCallback(() => {
     setFilters([]);
+    setDebouncedFilters([]);
   }, []);
 
   // Remove a single condition from filters
   const handleRemoveCondition = useCallback(
     (groupIndex: number, conditionIndex: number) => {
-      const next = filters.map((group, gi) => {
-        if (gi !== groupIndex) return group;
-        return {
-          ...group,
-          conditions: group.conditions.filter((_, ci) => ci !== conditionIndex),
-        };
-      }).filter((group) => group.conditions.length > 0);
+      const next = filters
+        .map((group, gi) => {
+          if (gi !== groupIndex) return group;
+          return {
+            ...group,
+            conditions: group.conditions.filter((_, ci) => ci !== conditionIndex),
+          };
+        })
+        .filter((group) => group.conditions.length > 0);
       setFilters(next);
     },
     [filters]
@@ -139,6 +180,20 @@ function App() {
 
   return (
     <div className="h-screen flex flex-col bg-slate-50">
+      {/* URL error banner */}
+      {urlErrorMsg && (
+        <div className="flex items-center gap-2 px-4 py-2 bg-amber-50 border-b border-amber-200 text-xs text-amber-800 shrink-0">
+          <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0" />
+          <span className="flex-1">{urlErrorMsg}</span>
+          <button
+            onClick={() => setUrlErrorMsg(null)}
+            className="text-amber-400 hover:text-amber-600 shrink-0"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
+
       {/* Header */}
       <header className="flex items-center justify-between h-12 px-4 bg-white border-b border-slate-200 shrink-0">
         <div className="flex items-center gap-3">
