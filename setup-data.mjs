@@ -44,6 +44,7 @@ download(DATA_URL)
     console.log(`✓ Saved ${OUTPUT} (${(buf.length / 1e6).toFixed(1)} MB)`);
   })
   .catch((err) => {
-    console.error('Download failed:', err.message);
-    process.exit(1);
+    console.warn('⚠️  Could not download orders.json automatically:', err.message);
+    console.warn('   You can download it manually with: npm run setup');
+    process.exit(0);
   });
